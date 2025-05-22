@@ -32,6 +32,7 @@ import { Leaf } from "./leaf"
 import { EditorHeader } from "./editor-header"
 import { useNotes } from "@/components/context/notes-context"
 import { useAssets } from "@/components/context/assets-context"
+import FloatingToolbar from "./floating-toolbar"
 
 const SLASH_COMMAND_CHAR = "/"
 
@@ -96,8 +97,8 @@ export const Editor = () => {
       // Check if the title (first heading) has changed
       let title = "Untitled"
       if (value.length > 0 && value[0].type === "heading-1") {
-        // @ts-ignore - we know this is a text node
-        const headingText = value[0].children[0]?.text || "Untitled"
+        const textNode = value[0].children[0] as { text?: string }
+        const headingText = textNode?.text || "Untitled"
         title = headingText
       }
 
@@ -343,14 +344,17 @@ export const Editor = () => {
           handleEditorChange(customElements);
         }}
       >
-        <Editable
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          placeholder="Start typing..."
-          spellCheck={false}
-          className="min-h-[300px] p-6 focus:outline-none"
-          onKeyDown={handleKeyDown}
-        />
+        <div className="relative flex-1 overflow-y-auto p-6 pb-24">
+          <FloatingToolbar />
+          <Editable
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            placeholder="Start typing..."
+            spellCheck={false}
+            className="min-h-[300px] p-6 focus:outline-none"
+            onKeyDown={handleKeyDown}
+          />
+        </div>
 
         <AnimatePresence>
           {showSlashMenu && (
@@ -358,6 +362,7 @@ export const Editor = () => {
               position={slashMenuPosition}
               onSelect={handleSlashCommand}
               onClose={() => setShowSlashMenu(false)}
+              searchTerm=""
             />
           )}
         </AnimatePresence>

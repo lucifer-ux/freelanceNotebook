@@ -16,12 +16,14 @@ export const ImageElement = ({ attributes, children, element, selected, focused 
 
   return (
     <div {...attributes} className={`my-4 ${selected && focused ? "ring-2 ring-blue-500 rounded-lg" : ""}`}>
-      <div contentEditable={false} className="relative">
-        <img
-          src={element.url || "/placeholder.svg"}
-          alt={element.caption || ""}
-          className="max-w-full rounded-lg mx-auto"
-        />
+      <div contentEditable={false} className="relative max-w-2xl mx-auto">
+        <div className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden">
+          <img
+            src={element.url || "/placeholder.svg"}
+            alt={element.caption || ""}
+            className="w-full h-full object-cover"
+          />
+        </div>
         <div className="mt-2 text-center">
           {isEditingCaption ? (
             <div className="flex items-center justify-center gap-2">

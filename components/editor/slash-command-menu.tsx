@@ -1,14 +1,14 @@
 "use client"
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Code, Headphones, Video } from 'lucide-react';
+import { FileText, Code, Headphones, Video, Image as ImageIcon, Box as Box3d } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 type SlashCommandMenuProps = {
   position: { top: number; left: number }
   onSelect: (command: string) => void
   onClose: () => void
-  searchTerm: string
+  searchTerm?: string
 }
 
 type SlashCommandOption = {
@@ -67,6 +67,26 @@ const COMMAND_OPTIONS = [
           <div className="flex items-center">
             <Video className="w-4 h-4 mr-2" />
             <span>Video</span>
+          </div>
+        ),
+      },
+      {
+        id: 'image',
+        name: 'Image',
+        icon: () => (
+          <div className="flex items-center">
+            <ImageIcon className="w-4 h-4 mr-2" />
+            <span>Image</span>
+          </div>
+        ),
+      },
+      {
+        id: '3d',
+        name: '3D Model',
+        icon: () => (
+          <div className="flex items-center">
+            <Box3d className="w-4 h-4 mr-2" />
+            <span>3D Model</span>
           </div>
         ),
       },

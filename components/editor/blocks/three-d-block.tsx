@@ -31,29 +31,21 @@ export const ThreeDBlock: React.FC<ThreeDBlockProps> = ({ onInsert }) => {
     if (!file) return
 
     setIsUploading(true)
-    setUploadProgress(0)
+    setUploadProgress(100) // Set to 100% immediately as we're using local files
 
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 95) {
-          clearInterval(interval)
-          return 95
-        }
-        return prev + 5
-      })
-    }, 100)
-
-    // Simulate file upload
-    setTimeout(() => {
-      clearInterval(interval)
-      setUploadProgress(100)
-      setIsUploading(false)
-
+    try {
       // Create a local object URL for the file
       const objectUrl = URL.createObjectURL(file)
+      
+      // Call the onInsert callback with the file URL
       onInsert(objectUrl, caption, file.name)
-    }, 2000)
+      
+    } catch (error) {
+      console.error('Error processing 3D model:', error)
+      alert('Failed to process 3D model. Please try again.')
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   return (

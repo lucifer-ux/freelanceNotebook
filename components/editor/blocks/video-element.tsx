@@ -22,20 +22,24 @@ export const VideoElement = ({ attributes, children, element, selected, focused 
 
   return (
     <div {...attributes} className={`my-4 ${selected && focused ? "ring-2 ring-blue-500 rounded-lg" : ""}`}>
-      <div contentEditable={false} className="relative">
-        {isEmbedUrl ? (
-          <div className="aspect-video">
+      <div contentEditable={false} className="relative max-w-2xl mx-auto">
+        <div className="relative aspect-video bg-gray-800 rounded-lg overflow-hidden">
+          {isEmbedUrl ? (
             <iframe
               src={element.url}
-              className="w-full h-full rounded-lg"
+              className="w-full h-full"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             ></iframe>
-          </div>
-        ) : (
-          <video src={element.url} controls className="max-w-full rounded-lg mx-auto" />
-        )}
+          ) : (
+            <video 
+              src={element.url} 
+              controls 
+              className="w-full h-full object-contain bg-black"
+            />
+          )}
+        </div>
         <div className="mt-2 text-center">
           {isEditingCaption ? (
             <div className="flex items-center justify-center gap-2">
