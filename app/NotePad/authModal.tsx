@@ -3,19 +3,23 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { Github, ArrowRight, Loader2 } from "lucide-react"
+import { Github, ArrowRight, Loader2, X } from "lucide-react"
 import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/components/ui/use-toast"
-import Link from 'next/link';
 
 type UserType = "agent" | "client"
 type AuthTab = "login" | "signup"
+
+interface AuthModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onAuthSuccess: (userData: any) => void
+}
 
 // Simple function to save user data to localStorage (simulating file storage)
 const saveUserData = (userData: any) => {
@@ -29,16 +33,6 @@ const saveUserData = (userData: any) => {
     // Save back to localStorage
     localStorage.setItem("users", JSON.stringify(existingUsers))
 
-    // Also save to a downloadable file for demonstration
-    const dataStr = JSON.stringify(existingUsers, null, 2)
-    const dataBlob = new Blob([dataStr], { type: "application/json" })
-
-    // Create a download link (optional - for viewing the data)
-    const url = URL.createObjectURL(dataBlob)
-    const link = document.createElement("a")
-    link.href = url
-    link.download = "users.json"
-
     console.log("User data saved:", userData)
     console.log("All users:", existingUsers)
 
@@ -49,8 +43,7 @@ const saveUserData = (userData: any) => {
   }
 }
 
-export default function AuthPage() {
-  const router = useRouter()
+export function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
   const { toast } = useToast()
   const [authTab, setAuthTab] = useState<AuthTab>("login")
   const [userType, setUserType] = useState<UserType>("client")
@@ -70,12 +63,6 @@ export default function AuthPage() {
     confirmPassword: "",
   })
 
-  // Error state for login form
-  const [loginErrors, setLoginErrors] = useState<{ [key: string]: string }>({})
-
-  // Error state for signup form
-  const [signupErrors, setSignupErrors] = useState<{ [key: string]: string }>({})
-
   // Handle login form submission - Accept any credentials
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -89,11 +76,12 @@ export default function AuthPage() {
           description: "Please fill in all fields.",
           variant: "destructive",
         })
+        setIsLoading(false)
         return
       }
 
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
       // Create user session data
       const userData = {
@@ -120,8 +108,8 @@ export default function AuthPage() {
         description: `Welcome, ${userData.name}!`,
       })
 
-      // Redirect to main app
-      router.push("/")
+      // Notify parent component of successful auth
+      onAuthSuccess(userData)
     } catch (error) {
       toast({
         title: "Login failed",
@@ -146,6 +134,7 @@ export default function AuthPage() {
           description: "Please fill in all fields.",
           variant: "destructive",
         })
+        setIsLoading(false)
         return
       }
 
@@ -155,11 +144,12 @@ export default function AuthPage() {
           description: "Passwords do not match.",
           variant: "destructive",
         })
+        setIsLoading(false)
         return
       }
 
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
       // Create user data
       const userData = {
@@ -186,8 +176,8 @@ export default function AuthPage() {
         description: `Welcome, ${signupForm.name}!`,
       })
 
-      // Redirect to main app
-      router.push("/")
+      // Notify parent component of successful auth
+      onAuthSuccess(userData)
     } catch (error) {
       toast({
         title: "Signup failed",
@@ -205,7 +195,7 @@ export default function AuthPage() {
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
       // Create mock user data for social login
       const userData = {
@@ -232,8 +222,8 @@ export default function AuthPage() {
         description: `Welcome, ${userData.name}!`,
       })
 
-      // Redirect to main app
-      router.push("/")
+      // Notify parent component of successful auth
+      onAuthSuccess(userData)
     } catch (error) {
       toast({
         title: "Login failed",
@@ -245,33 +235,10 @@ export default function AuthPage() {
     }
   }
 
-  // Update form values
-  const updateLoginForm = (field: string, value: string) => {
-    setLoginForm((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user types
-    if (loginErrors && loginErrors[field]) {
-      setLoginErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
-    }
-  }
-
-  const updateSignupForm = (field: string, value: string) => {
-    setSignupForm((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user types
-    if (signupErrors && signupErrors[field]) {
-      setSignupErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[field]
-        return newErrors
-      })
-    }
-  }
+  if (!isOpen) return null
 
   return (
-    <div className="min-h-screen bg-[#121212] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -284,8 +251,17 @@ export default function AuthPage() {
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-[#1E1E1E] rounded-xl shadow-xl overflow-hidden"
+          className="bg-[#1E1E1E] rounded-xl shadow-xl overflow-hidden relative"
         >
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
+            aria-label="Close"
+          >
+            <X size={20} />
+          </button>
+
           {/* User Type Selection */}
           <div className="p-6 pb-0">
             <div className="flex justify-center mb-6">
@@ -367,7 +343,7 @@ export default function AuthPage() {
                           disabled={isLoading}
                         />
                       </div>
-                      <Link href="/NotePad">
+
                       <Button
                         type="submit"
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white"
@@ -385,7 +361,6 @@ export default function AuthPage() {
                           </>
                         )}
                       </Button>
-                      </Link>
                     </form>
 
                     <div className="mt-6">
